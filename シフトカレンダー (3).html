@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>4班3交代 シフトカレンダー</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d27;
+  --surface2: #22263a;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.18);
+  --text: #e8eaf0;
+  --text2: #8b90a8;
+  --text3: #555c78;
+  --night: #1e3a5f;
+  --night-t: #7bb3e0;
+  --eve: #3d1f6b;
+  --eve-t: #b088e8;
+  --morn: #0f4a2a;
+  --morn-t: #5cc98a;
+  --off: #5c1a1a;
+  --off-t: #e07878;
+  --yukyu-bg: #7a1515;
+  --yukyu-t: #ff8f8f;
+  --gold: #f5a623;
+  --red: #e05555;
+  --blue: #5b8fd4;
+  --today-c: #3b82f6;
+  --aa: #3b82f6;
+  --ab: #8b5cf6;
+  --ac: #10b981;
+  --ad: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  overscroll-behavior: none;
+}
+
+.hdr {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.hdr-title { font-size: 16px; font-weight: 700; }
+.hdr-title em { color: var(--gold); font-style: normal; }
+
+.main { padding: 12px 10px 60px; max-width: 600px; margin: 0 auto; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.card-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 10px;
+}
+
+.band-row { display: flex; gap: 8px; }
+.band-btn {
+  flex: 1;
+  height: 52px;
+  border-radius: 10px;
+  border: 2px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  touch-action: manipulation;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.band-btn[data-b="A"].on { background: var(--aa); border-color: var(--aa); color: #fff; }
+.band-btn[data-b="B"].on { background: var(--ab); border-color: var(--ab); color: #fff; }
+.band-btn[data-b="C"].on { background: var(--ac); border-color: var(--ac); color: #fff; }
+.band-btn[data-b="D"].on { background: var(--ad); border-color: var(--ad); color: #fff; }
+
+.mode-row { display: flex; gap: 8px; }
+.mode-btn {
+  flex: 1;
+  height: 48px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all .15s;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.mode-btn.on     { background: #0ea5e9; border-color: #0ea5e9; color: #fff; }
+.mode-btn.add-on { background: #c0392b; border-color: #c0392b; color: #fff; }
+.mode-btn.del-on { background: #374151; border-color: #6b7280; color: #d1d5db; }
+.mode-hint { font-size: 11px; color: var(--text3); margin-top: 8px; min-height: 14px; }
+
+.ynav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ynav-btn {
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all .15s;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.ynav-btn:active { background: var(--surface2); }
+.ynav-title { font-size: 17px; font-weight: 700; color: var(--text); }
+
+.mpills {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.mpill {
+  height: 40px;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all .15s;
+  font-family: 'Noto Sans JP', sans-serif;
+}
+.mpill.on {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(245,166,35,0.1);
+  font-weight: 700;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 10px;
+}
+.leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.ldot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+.cal-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cal-table th {
+  height: 30px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-table th.s { color: var(--blue); }
+.cal-table th.n { color: var(--red); }
+.cal-table td {
+  vertical-align: top;
+  border: 1px solid var(--border);
+  padding: 2px;
+}
+.cal-table td.empty { border-color: transparent; background: transparent; }
+.cal-table td.tap { cursor: pointer; }
+.cal-table td.tap:active .dc { background: rgba(255,255,255,0.06); }
+
+.dc {
+  min-height: 80px;
+  border-radius: 6px;
+  padding: 4px 3px 3px;
+  position: relative;
+  transition: background .1s;
+}
+.dc.hbg { background: rgba(224,85,85,0.07); }
+.dc.today { outline: 2px solid var(--today-c); outline-offset: -2px; border-radius: 6px; }
+
+.dn {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.dn.s { color: var(--blue); }
+.dn.h { color: var(--red); }
+.hn {
+  font-size: 8px;
+  color: var(--red);
+  line-height: 1.2;
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+.bgs { display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.badge {
+  display: block;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+  line-height: 1.5;
+}
+.badge.me {
+  font-size: 11px;
+  padding: 3px 5px;
+  outline: 2.5px solid var(--gold);
+  outline-offset: 1px;
+}
+.badge.yk {
+  background: var(--yukyu-bg) !important;
+  color: var(--yukyu-t) !important;
+  outline: 2.5px solid var(--gold);
+  outline-offset: 1px;
+  font-size: 11px;
+  padding: 3px 5px;
+}
+.sh-n { background: var(--night);  color: var(--night-t); }
+.sh-e { background: var(--eve);    color: var(--eve-t); }
+.sh-m { background: var(--morn);   color: var(--morn-t); }
+.sh-o { background: var(--off);    color: var(--off-t); }
+
+.reset-wrap { margin-top: 14px; }
+.reset-btn {
+  width: 100%;
+  height: 54px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(192,57,43,0.5);
+  background: rgba(192,57,43,0.12);
+  color: #e07878;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all .15s;
+}
+.reset-btn:active { background: rgba(192,57,43,0.25); }
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-title"><em>4班</em>3交代 シフトカレンダー</div>
+  <div style="font-size:11px;color:var(--text3)">2026〜</div>
+</div>
+
+<div class="main">
+
+  <div class="card">
+    <div class="card-label">自分の班</div>
+    <div class="band-row" id="bandRow"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">入力モード</div>
+    <div class="mode-row">
+      <button class="mode-btn on"  id="mv">表示</button>
+      <button class="mode-btn"     id="ma">＋ 有給追加</button>
+      <button class="mode-btn"     id="md">－ 有給削除</button>
+    </div>
+    <div class="mode-hint" id="mh"></div>
+  </div>
+
+  <div class="ynav">
+    <button class="ynav-btn" id="pyBtn">◀ 前年</button>
+    <div class="ynav-title" id="yt"></div>
+    <button class="ynav-btn" id="nyBtn">翌年 ▶</button>
+  </div>
+
+  <div class="mpills" id="mp"></div>
+
+  <div class="legend">
+    <div class="leg"><div class="ldot" style="background:var(--night)"></div>夜勤</div>
+    <div class="leg"><div class="ldot" style="background:var(--eve)"></div>夕勤</div>
+    <div class="leg"><div class="ldot" style="background:var(--morn)"></div>朝勤</div>
+    <div class="leg"><div class="ldot" style="background:var(--off)"></div>休み</div>
+    <div class="leg"><div class="ldot" style="outline:2px solid var(--gold);outline-offset:1px"></div>自分の班</div>
+    <div class="leg"><div class="ldot" style="background:var(--yukyu-bg)"></div>有給</div>
+  </div>
+
+  <div class="cal-wrap">
+    <table class="cal-table">
+      <thead><tr>
+        <th>月</th><th>火</th><th>水</th><th>木</th><th>金</th>
+        <th class="s">土</th><th class="n">日</th>
+      </tr></thead>
+      <tbody id="cb"></tbody>
+    </table>
+  </div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" id="resetBtn">🗑　有給をすべてリセット</button>
+  </div>
+
+</div>
+
+<script>
+const HOL={
+  "2026-01-01":"元日","2026-01-12":"成人の日",
+  "2026-02-11":"建国記念日","2026-02-23":"天皇誕生日",
+  "2026-03-20":"春分の日","2026-04-29":"昭和の日",
+  "2026-05-03":"憲法記念日","2026-05-04":"みどりの日",
+  "2026-05-05":"こどもの日","2026-05-06":"振替休日",
+  "2026-07-20":"海の日","2026-08-11":"山の日",
+  "2026-09-21":"敬老の日","2026-09-22":"国民の休日","2026-09-23":"秋分の日",
+  "2026-10-12":"スポーツの日","2026-11-03":"文化の日",
+  "2026-11-23":"勤労感謝の日","2026-12-23":"天皇誕生日"
+};
+const SC={'夜勤':'sh-n','夕勤':'sh-e','朝勤':'sh-m','休み':'sh-o'};
+const SL={'夜勤':'夜勤','夕勤':'夕勤','朝勤':'朝勤','休み':'休'};
+const CY=['夜勤','夜勤','夜勤','休み','夕勤','夕勤','夕勤','休み','朝勤','朝勤','朝勤','休み'];
+const BASE=new Date(2026,3,7);
+const OFF={A:0,B:9,C:6,D:3};
+const MN=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+let myB='A',cY=2026,cM=3,mode='view';
+let yuk=new Set();
+
+function gs(band,date){
+  const d0=new Date(BASE);d0.setHours(0,0,0,0);
+  const d1=new Date(date);d1.setHours(0,0,0,0);
+  return CY[((Math.round((d1-d0)/86400000)-OFF[band])%12+12)%12];
+}
+function p2(n){return String(n).padStart(2,'0');}
+function dk(y,m,d){return `${y}-${p2(m)}-${p2(d)}`;}
+
+function tap(el, fn) {
+  let moved = false;
+  el.addEventListener('touchstart', () => { moved = false; }, { passive: true });
+  el.addEventListener('touchmove', () => { moved = true; }, { passive: true });
+  el.addEventListener('touchend', e => { if (!moved) { e.preventDefault(); fn(); } });
+  el.addEventListener('click', fn);
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('mv').className = 'mode-btn' + (m==='view' ? ' on' : '');
+  document.getElementById('ma').className = 'mode-btn' + (m==='off'  ? ' add-on' : '');
+  document.getElementById('md').className = 'mode-btn' + (m==='del'  ? ' del-on' : '');
+  const h = { view:'', off:'日付をタップして有給を追加', del:'タップした有給を削除' };
+  document.getElementById('mh').textContent = h[m];
+  render();
+}
+
+function clearAll() {
+  if (confirm('追加した有給をすべてリセットしますか？')) { yuk.clear(); render(); }
+}
+
+function buildBands() {
+  const c = document.getElementById('bandRow');
+  c.innerHTML = '';
+  ['A','B','C','D'].forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'band-btn' + (b === myB ? ' on' : '');
+    btn.setAttribute('data-b', b);
+    btn.textContent = b + '班';
+    tap(btn, () => { myB = b; buildBands(); render(); });
+    c.appendChild(btn);
+  });
+}
+
+function buildPills() {
+  const c = document.getElementById('mp');
+  c.innerHTML = '';
+  document.getElementById('yt').textContent = `${cY}年 ${MN[cM]}`;
+  MN.forEach((n, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'mpill' + (i === cM ? ' on' : '');
+    btn.textContent = n;
+    tap(btn, () => { cM = i; buildPills(); render(); });
+    c.appendChild(btn);
+  });
+}
+
+function handleCell(k) {
+  if (mode === 'off') yuk.add(k);
+  else if (mode === 'del') yuk.delete(k);
+  else return;
+  render();
+}
+
+function render() {
+  const y=cY, m=cM;
+  const first=new Date(y,m,1);
+  let sd=first.getDay();
+  sd = sd===0 ? 6 : sd-1;
+  const days=new Date(y,m+1,0).getDate();
+  const now=new Date(); now.setHours(0,0,0,0);
+
+  let cells=[];
+  for(let i=0;i<sd;i++) cells.push(null);
+  for(let d=1;d<=days;d++) cells.push(d);
+  while(cells.length%7!==0) cells.push(null);
+
+  // Build rows
+  const tbody = document.getElementById('cb');
+  tbody.innerHTML = '';
+
+  for(let r=0; r<cells.length/7; r++){
+    const tr = document.createElement('tr');
+    for(let c=0; c<7; c++){
+      const d = cells[r*7+c];
+      const td = document.createElement('td');
+      if(!d){ td.className='empty'; tr.appendChild(td); continue; }
+
+      const dt = new Date(y,m,d);
+      const k = dk(y,m+1,d);
+      const wd = dt.getDay();
+      const hol = HOL[k];
+      const isT = dt.getTime()===now.getTime();
+      const hasY = yuk.has(k);
+
+      if(mode!=='view'){
+        td.className='tap';
+        tap(td, () => handleCell(k));
+      }
+
+      const dc = document.createElement('div');
+      dc.className = 'dc' + (hol?' hbg':'') + (isT?' today':'');
+
+      const dn = document.createElement('div');
+      dn.className = 'dn' + (wd===6?' s':((wd===0||hol)?' h':''));
+      dn.textContent = d;
+      dc.appendChild(dn);
+
+      if(hol){ const hn=document.createElement('div'); hn.className='hn'; hn.textContent=hol; dc.appendChild(hn); }
+
+      const bgs = document.createElement('div');
+      bgs.className = 'bgs';
+      ['A','B','C','D'].forEach(band => {
+        const sh = gs(band,dt);
+        const isMe = band===myB;
+        const sp = document.createElement('span');
+        if(isMe && hasY){
+          sp.className = 'badge yk';
+          sp.textContent = band+':有給';
+        } else if(isMe){
+          sp.className = `badge me ${SC[sh]}`;
+          sp.textContent = band+':'+SL[sh];
+        } else {
+          sp.className = `badge ${SC[sh]}`;
+          sp.textContent = band+':'+SL[sh];
+        }
+        bgs.appendChild(sp);
+      });
+      dc.appendChild(bgs);
+      td.appendChild(dc);
+      tr.appendChild(td);
+    }
+    tbody.appendChild(tr);
+  }
+}
+
+// Wire up mode buttons
+tap(document.getElementById('mv'), () => setMode('view'));
+tap(document.getElementById('ma'), () => setMode('off'));
+tap(document.getElementById('md'), () => setMode('del'));
+tap(document.getElementById('pyBtn'), () => { cY--; buildPills(); render(); });
+tap(document.getElementById('nyBtn'), () => { cY++; buildPills(); render(); });
+tap(document.getElementById('resetBtn'), clearAll);
+
+buildBands();
+buildPills();
+render();
+</script>
+</body>
+</html>
